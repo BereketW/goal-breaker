@@ -1,5 +1,5 @@
 -- Create tables manually
--- Run as: psql -h localhost -U fabe -d goal_breaker -f create_tables.sql
+-- Run as: psql -h localhost -U app_user -d data_store -f create_tables.sql
 
 CREATE TABLE IF NOT EXISTS goals (
     id SERIAL NOT NULL,
@@ -17,6 +17,4 @@ CREATE TABLE IF NOT EXISTS subtasks (
     FOREIGN KEY(goal_id) REFERENCES goals (id)
 );
 
-CREATE INDEX IF NOT EXISTS ix_goals_id ON goals (id);
 CREATE INDEX IF NOT EXISTS ix_goals_description ON goals (description);
-CREATE INDEX IF NOT EXISTS ix_subtasks_id ON subtasks (id);
