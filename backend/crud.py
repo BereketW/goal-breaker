@@ -3,34 +3,34 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 import models, schemas
 
-async def create_goal(db: AsyncSession, goal: schemas.GoalCreate, subtasks: list[schemas.SubTaskCreate]):
-    db_goal = models.Goal(description=goal.description)
-    db.add(db_goal)
+async def create_item(db: AsyncSession, item: schemas.ItemCreate, related_items_data: list[schemas.RelatedItemCreate]) -> models.Item:
+    db_item = models.Item(description=item.description)
+    db.add(db_item)
     await db.commit()
-    await db.refresh(db_goal)
+    await db.refresh(db_item)
     
-    for task in subtasks:
-        db_subtask = models.SubTask(
-            goal_id=db_goal.id,
-            description=task.description,
-            complexity_score=task.complexity_score
+    for related_item_data in related_items_data:
+        db_related_item = models.RelatedItem(
+            item_id=db_item.id,
+            description=related_item_data.description,
+            attribute_score=related_item_data.attribute_score
         )
-        db.add(db_subtask)
+        db.add(db_related_item)
     
     await db.commit()
     result = await db.execute(
-        select(models.Goal).options(selectinload(models.Goal.subtasks)).where(models.Goal.id == db_goal.id)
+        select(models.Item).options(selectinload(models.Item.related_items)).where(models.Item.id == db_item.id)
     )
     return result.scalar_one()
 
-async def get_goal(db: AsyncSession, goal_id: int):
+async def get_item(db: AsyncSession, item_id: int) -> models.Item:
     result = await db.execute(
-        select(models.Goal).options(selectinload(models.Goal.subtasks)).where(models.Goal.id == goal_id)
+        select(models.Item).options(selectinload(models.Item.related_items)).where(models.Item.id == item_id)
     )
     return result.scalar_one()
 
-async def get_goals(db: AsyncSession, skip: int = 0, limit: int = 100):
+async def get_items(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[models.Item]:
     result = await db.execute(
-        select(models.Goal).options(selectinload(models.Goal.subtasks)).offset(skip).limit(limit).order_by(models.Goal.created_at.desc())
+        select(models.Item).options(selectinload(models.Item.related_items)).offset(skip).limit(limit).order_by(models.Item.created_at.desc())
     )
     return result.scalars().all()
