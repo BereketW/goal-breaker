@@ -4,31 +4,31 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: goal_breaker_db
+    container_name: app_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: goal_breaker
+      POSTGRES_DB: app_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./backend/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   # Backend API
   backend:
-    build:
+    build: 
       context: ./backend
       dockerfile: Dockerfile
-    container_name: goal_breaker_backend
+    container_name: app_backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/goal_breaker
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/app_db
+      LLM_API_KEY: ${LLM_API_KEY}
     ports:
       - "8001:8000"
     depends_on:
@@ -41,7 +41,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: goal_breaker_frontend
+    container_name: app_frontend
     environment:
       BACKEND_URL: http://backend:8000
     ports:
