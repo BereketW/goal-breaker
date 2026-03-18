@@ -1,10 +1,13 @@
 -- Run this as postgres superuser to grant permissions
--- psql -h localhost -U postgres -d goal_breaker -f setup_db.sql
+-- psql -h localhost -U postgres -d app_database -f setup_db.sql
 
-GRANT ALL PRIVILEGES ON DATABASE goal_breaker TO fabe;
-GRANT ALL PRIVILEGES ON SCHEMA public TO fabe;
-GRANT CREATE ON SCHEMA public TO fabe;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO fabe;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO fabe;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO fabe;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO fabe;
+-- Ensure the application user exists before granting permissions
+CREATE USER IF NOT EXISTS app_user;
+
+GRANT ALL PRIVILEGES ON DATABASE app_database TO app_user;
+GRANT ALL PRIVILEGES ON SCHEMA public TO app_user;
+GRANT CREATE ON SCHEMA public TO app_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO app_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO app_user;
